@@ -6,9 +6,17 @@ import java.util.List;
 
 import tanvir.project.sudoku.engine.SudokuEngine;
 
+/**
+ * This class is used for testing the SudokuEngine class without having to run the entire webapplication.
+ * @author Tanvir Kaykobad
+ *
+ */
 public class SudokuMap {
 //	public int[][] map = new int[9][9];
 	
+	/*
+	 * This method converts a string sudoku map as it appears in the main method, into a sudoku map format understood by SudokuEngine
+	 */
 	public int[][] readMap(String input) {
 		int[][] map = new int[9][9];
 		
@@ -33,6 +41,11 @@ public class SudokuMap {
 		return map;
 	}
 	
+	
+	/**
+	 * This method is used for testing the SudokuEngine class
+	 * @param args
+	 */
 	public static void main(String args[]) {
 		SudokuMap s = new SudokuMap();
 //		String input =  "113.5.7.9\n" +
@@ -45,16 +58,16 @@ public class SudokuMap {
 //						"....5....\n" +
 //						"..2....9.\n";
 		
-//		String input = 
-//				"123.5.7.9\n" +
-//				".5.......\n" +
-//				"...4.....\n" +
-//				".....6...\n" +
-//				"....2..8.\n" +
-//				".........\n" +
-//				".3....9..\n" +
-//				"....5....\n" +
-//				"..2....1.\n";
+		String input = 
+				"123.5.7.9\n" +
+				".5.......\n" +
+				"...4.....\n" +
+				".....6...\n" +
+				"....2..8.\n" +
+				".........\n" +
+				".3....9..\n" +
+				"....5....\n" +
+				"..2....1.\n";
 
 		//easy
 //		String input =
@@ -68,7 +81,7 @@ public class SudokuMap {
 //				"1.5 ... ..."+
 //				"79. 4.1 ...";
 		
-		//easier
+//		//easier
 //		String input =
 //				"... ... 68."+
 //				"... .73 ..9"+
@@ -80,17 +93,17 @@ public class SudokuMap {
 //				"7.. 68. ..."+
 //				".28 ... ...";
 		
-		//No Solution
-		String input =
-				"... ... 61."+
-				"... .73 ..."+
-				"... ... .45"+
-				"41. ... ..."+
-				"8.3 .5. 9.2"+
-				"... ... .36"+
-				"96. ... 3.."+
-				"7.. 68. ..."+
-				".2. ... ..."; 
+//		//No Solution
+//		String input =
+//				"... ... 61."+
+//				"... .73 ..."+
+//				"... ... .45"+
+//				"41. ... ..."+
+//				"8.3 .5. 9.2"+
+//				"... ... .36"+
+//				"96. ... 3.."+
+//				"7.. 68. ..."+
+//				".2. ... ..."; 
 
 				
 		

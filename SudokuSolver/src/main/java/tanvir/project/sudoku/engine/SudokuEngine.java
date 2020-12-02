@@ -4,13 +4,33 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
+import tanvir.project.sudoku.Bean;
+
+/**
+ * This class solves sudoku puzzles using backtracking. 
+ * 
+ * @author Tanvir Kaykobad
+ *
+ */
 public class SudokuEngine {
+	private static final Logger LOGGER = LogManager.getLogger(SudokuEngine.class);
+
+	
 	private int[][] map;
 	private long attempt = 0;
-//	private int[][] available;
 	
+	/**
+	 * Each integer of rulesRow, rulesCol and rules3x3 keep track of the numbers occured so far in its respective row, column or sub-matrix.
+	 */
 	private List<Integer> rulesRow, rulesCol, rules3x3;
 	
+	/**
+	 * Contructor used by the class SudokuMap for testing
+	 * @param map a 2d Character map where each cell is a digit between '1' and '9'.If the cell contains ' ', it means the cell has not yet been filled.
+	 */
 	public SudokuEngine(int[][] map) {
 		super();
 		this.map = map.clone();
@@ -22,6 +42,12 @@ public class SudokuEngine {
 		}
 	}
 	
+	/**
+	 * Constructor
+	 * @param map a 2d Character map where each cell is a digit between '1' and '9'.If the cell contains ' ', it means the cell has not yet been filled.
+
+	 * @throws IllegalArgumentException If the map must be of size 9X9, or if it already breaks one of the row, column or sub-matrix rules.
+	 */
 	public SudokuEngine(final Character[][] map) throws IllegalArgumentException {
 		if(map.length!=9 || (map.length==9 && map[0].length!=9)) {
 			throw new IllegalArgumentException("Sudoku Table must be 9x9");
@@ -45,29 +71,6 @@ public class SudokuEngine {
 		}
 	}
 	
-//	public SudokuEngine(Integer[][] map) throws IllegalArgumentException {
-//		if(map.length!=9 || (map.length==9 && map[0].length!=9)) {
-//			throw new IllegalArgumentException("Sudoku Table must be 9x9");
-//		}
-//		
-//		this.map = new int[9][9];
-//		for(int i=0;i<9;i++) {
-//			for(int j=0;j<9;j++) {
-//				if(map[i][j]>=1 && map[i][j]<=9) {
-//					this.map[i][j]=map[i][j].intValue();
-//				} else {
-//					this.map[i][j]=0;
-//				}
-//			}
-//		}
-//		
-//		try {
-//			isValid();
-//		} catch (IllegalArgumentException e) {
-//			throw e;
-//		}
-//	}
-	
 	/**
 	 * This method returns the primitive integer 2d array sudoku map saved in the solution engine.
 	 * @return an Integer[9][9]
@@ -89,23 +92,6 @@ public class SudokuEngine {
 		return solution;
 	}
 	
-//	private Integer[][] getPrimitiveToWrapped(int[][] map) {
-//		if(map==null)
-//			return null;
-//		
-//		Integer[][] solution = new Integer[9][9];
-//		for(int i=0;i<9;i++) {
-//			for(int j=0;j<9;j++) {
-//				if(map[i][j]>=1 && map[i][j]<=9) {
-//					solution[i][j]=map[i][j];
-//				} else {
-//					solution[i][j]=null;
-//				}
-//			}
-//		}
-//		return solution;
-//	}
-	
 	/**
 	 * This method returns the solution of the sudoku problem
 	 * @return
@@ -114,23 +100,38 @@ public class SudokuEngine {
 		return getPrimitiveToWrapped(solveRecursively());
 	}
 	
+	/**
+	 * @return the number of attempts SudokuEngine took for the puzzle, which is the number of times a cell in the matrix was filled.
+	 */
 	public long getNumberOfAttempts() {
 		return this.attempt;
 	}
 	
+	/**
+	 * The engine attemps to solves the puzzle. 
+	 * @return The solution map. If no solution is found then null is returned.
+	 */
 	public int[][] solveRecursively(){
 		try {
 			isValid();
 		} catch (Exception e) {
-			System.err.print(e.getMessage());
+			LOGGER.error(e.getMessage());
 			return null;
 		}
 		
 		int[][] solution = solveRecursively(map, rulesRow, rulesCol, rules3x3); 
-//		System.out.println("Number of attempts: "+attempt);
+		LOGGER.info("Number of attempts: "+attempt);
 		return solution;
 	}
 	
+	/**
+	 * Recursively solves the sudoku board
+	 * @param map the sudoku board
+	 * @param rulesRow The list of 9 integers tracking the numbers occurred in its respective row 
+	 * @param rulesCol The list of 9 integers tracking the numbers occurred in its respective column
+	 * @param rules3x3 The list of 9 integers tracking the numbers occurred in its respective 3x3 sub-matrix
+	 * @return The solved board, or null
+	 */
 	private int[][] solveRecursively(final int[][] map, List<Integer> rulesRow, List<Integer> rulesCol, List<Integer> rules3x3){
 		if(isMapComplete(map))
 			return map;
@@ -153,15 +154,7 @@ public class SudokuEngine {
 					
 					for (int bitShift=0; available>0; bitShift++) {
 						if((available & 1) > 0) {
-							//debugging
-							findFirstEmpty(map);
-							if(firstEmptyi<i || (firstEmptyi==i && firstEmptyj<j)) {
-								System.out.println("Left cell unsolved");
-							}
-							
-							
-							int[][] mapNew = Arrays.stream(map).map(int[]::clone).toArray(int[][]::new);
-							mapNew[i][j]=bitShift+1;
+							map[i][j]=bitShift+1;
 							
 							List<Integer> rulesRowNew = new ArrayList<Integer>(rulesRow);
 							rulesRowNew.set(i, rulesRowNew.get(i) | 1<<bitShift);
@@ -172,23 +165,22 @@ public class SudokuEngine {
 
 							attempt += 1;
 							
-							if(attempt%1000000==0) {
+							//output the current state to show the engine is active
+							if(attempt%1000==0) {
 								outputMap(map);
-								System.out.println("Attempt: "+attempt+" Adding "+(bitShift+1) + " to ["+i+"]["+j+"]");
+								LOGGER.debug("Attempt: "+attempt+" Adding "+(bitShift+1) + " to ["+i+"]["+j+"]");
 							}
-							solutionMap = solveRecursively(mapNew, rulesRowNew, rulesColNew, rules3x3New);
-
-//							System.out.println("Returned:");
-//							outputMap(map);
+							solutionMap = solveRecursively(map, rulesRowNew, rulesColNew, rules3x3New);
 							
 							if(solutionMap!=null) {
 								return solutionMap;
 							}
 						} else if(available==0){
-							System.out.println("No Solution Here");
+							LOGGER.info("No Solution found");
 						}
 						available = available>>1;								
 					}
+					map[i][j]=0;
 					return null;
 				}
 			}
@@ -196,19 +188,11 @@ public class SudokuEngine {
 		return null;
 	}
 	
-	static int firstEmptyi=0, firstEmptyj=0;
-	private void findFirstEmpty(int[][] map) {
-		firstEmptyi=9;
-		firstEmptyj=9;
-		for(int i=0;i<9;i++)
-			for(int j=0;j<9;j++)
-				if(map[i][j]==0){
-					firstEmptyi=i;
-					firstEmptyj=j;
-					return;
-				}
-	}
-	
+	/**
+	 * Checks if the map has been solved
+	 * @param map The sudoku map
+	 * @return true of the map is complete, false otherwise.
+	 */
 	private boolean isMapComplete(int[][] map) {
 		for(int i=0;i<9;i++) {
 			for(int j=0;j<9;j++) {
@@ -220,57 +204,25 @@ public class SudokuEngine {
 		return true;
 	}
 	
+	/**
+	 * Outputs the map into LOGGER
+	 * @param map
+	 */
 	public static void outputMap(int[][] map) {
 		StringBuilder sb = new StringBuilder();
 		for(int i=0;i<map.length;i++) {
 			for(int j=0;j<map.length;j++) {
 				if(map[i][j]!=0){
 					sb.append(map[i][j]);
-//					System.out.print(map[i][j]);
 				} else{
 					sb.append('.');
-//					System.out.print(.);
 				}
 			}
 			sb.append('\n');
-//			System.out.println();
 		}
-		System.out.println(sb.toString());
+		LOGGER.info(sb.toString());
 	}
 
-	
-/*	
-	public int[][] computeValidChoices(){
-		available = new int[9][9];
-		
-		//Inserting each unsolved cells of the map in the priority queue with key = col*9+row
-		//and value = number of possible remaining option for the cell without breaking the row/column/3x3 rules.
-		PriorityQueue<Map.Entry<Integer, Integer>> pq = new PriorityQueue<>(
-				(Map.Entry<Integer, Integer> o1, Map.Entry<Integer, Integer> o2) -> 
-				(Integer.compare(o1.getValue(),o2.getValue()))
-				);
-		
-		for(int i=0;i<9;i++) {
-			for(int j=0;j<9;j++) {
-				//if this cell's value has not yet been chosen
-				if(map[i][j]==0) {
-					//combined marks all the values that are unavailable to this cell
-					int combined = rulesRow.get(i) | rulesCol.get(j) | rules3x3.get((i/3)*3 + j/3);
-					//we want the complement of these values marking the values available to this cell
-					//mask is used to avoid overflow
-					int mask = (1 << 9) -1;
-					available[i][j] = ~combined & mask;
-					
-					int currentOption = countSetBits(available[i][j]);
-					Map.Entry<Integer, Integer> entry = Map.entry(i*9+j, currentOption);
-					pq.add(entry);
-				}
-			}
-		}
-		
-		return map;
-	}
-*/
 	
     /* Brian Kernighan�s Algorithm for counting the one bits of an integer 
      * Function to get no of set bits in binary representation of passed binary no. */
@@ -284,6 +236,11 @@ public class SudokuEngine {
         return count; 
     }
 	
+    /**
+     * This method checks if any of the row, column or sub-matrix rules have been broken by the map
+     * @return true if the current map is valid, false otherwise
+     * @throws IllegalArgumentException If the map breaks any rules. All broken instances of the rules are specified in the exception.
+     */
 	public boolean isValid() throws IllegalArgumentException{
 		//initializing rules
 		rulesRow = new ArrayList<Integer>(9);
@@ -306,7 +263,7 @@ public class SudokuEngine {
 					int shiftBy = map[i][j]-1;
 					//check along horizontal
 					if(((rulesRow.get(i)>>shiftBy) & 1) > 0) {
-//						System.out.println("Row "+i+" has multiple "+ map[i][j]);
+//						LOGGER.debug("Row "+i+" has multiple "+ map[i][j]);
 						if(!valid) {
 							error+=", ";
 						}
@@ -316,7 +273,7 @@ public class SudokuEngine {
 
 					//check along vertical line
 					if(((rulesCol.get(j)>>shiftBy) & 1) > 0) {
-//						System.out.println("Col "+j+" has multiple "+ map[i][j]);
+//						LOGGER.debug("Col "+j+" has multiple "+ map[i][j]);
 						if(!valid) {
 							error+=", ";
 						}
@@ -326,7 +283,7 @@ public class SudokuEngine {
 
 					//check along 3x3 squires line
 					if(((rules3x3.get((i/3)*3 + j/3)>>shiftBy) & 1) > 0) {
-//						System.out.println("3x3 "+((i/3)*3 + j/3)+" has multiple "+ map[i][j]);
+//						LOGGER.debug("3x3 "+((i/3)*3 + j/3)+" has multiple "+ map[i][j]);
 						if(!valid) {
 							error+=", ";
 						}

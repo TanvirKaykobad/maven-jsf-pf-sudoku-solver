@@ -15,6 +15,13 @@ import org.apache.log4j.Logger;
 
 import tanvir.project.sudoku.engine.SudokuEngine;
 
+
+/**
+ * The backing bean for index.xhtml file
+ * @author Tanvir Kaykobad
+ *
+ */
+
 @Named
 //@RequestScoped
 @ViewScoped
@@ -26,14 +33,24 @@ public class Bean implements Serializable{
 
 	private static final Logger LOGGER = LogManager.getLogger(Bean.class);
 	
+	/**
+	 * This map is used to fill the sudoku board on index.xhtml file
+	 */
 	private Character[][] map;
+	/**
+	 * The possible options (1-9 and none) for the dropdown menus on the sudoku board
+	 */
 	private Map<String,Object> possibleValues;
-
-    private String input;
-    private String output;
     
+	/**
+	 * The SudokuEngine class is used to validate and solve the sudoku puzzle.
+	 */
     private SudokuEngine engine = null;
     
+    
+    /**
+     * This method is called after index.xhtml page is loaded
+     */
 	@PostConstruct
 	public void initialize(){
 		if(!FacesContext.getCurrentInstance().isPostback()) {
@@ -47,6 +64,9 @@ public class Bean implements Serializable{
 		}
 	}
 	
+	/**
+	 * Logs the map for debugging purposes
+	 */
 	public void logMap() {
 		for(int i=0;i<map.length;i++) {
 			StringBuilder sb = new StringBuilder();
@@ -57,6 +77,9 @@ public class Bean implements Serializable{
 		}
 	}
 	
+	/**
+	 * Validates the sudoku board. If not valid, a detailed message is given to show any error. 
+	 */
 	public void validateSudoku() {
     	try {
     		sanatizeBoard(map);
@@ -67,6 +90,9 @@ public class Bean implements Serializable{
     	}
 	}
 	
+	/**
+	 * Solves the sudoku board using the SudokuEngine. Notes the time taken in milliseconds, and notifies if the board is not solvable.
+	 */
     public void solveSudoku() {
     	if(map!=null) {
     		sanatizeBoard(map);
@@ -97,17 +123,27 @@ public class Bean implements Serializable{
     	}
     }
  
+    /**
+     * Helper method to push notification to the front end
+     * @param summary
+     */
     public void addMessage(String summary) {
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null);
         FacesContext.getCurrentInstance().addMessage(null, message);
     }
+    /**
+     * Helper method to push error messages to the front end
+     * @param summary
+     */
     public void addErrorMessage(String summary) {
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, null);
         FacesContext.getCurrentInstance().addMessage(null, message);
     }
     
 
-    
+    /**
+     * Clears the board.
+     */
     public void clearBoard() {
     	map = new Character[9][9];
     	for(int i=0;i<9;i++) {
@@ -117,6 +153,9 @@ public class Bean implements Serializable{
     	}
     }
     
+    /**
+     * Saves default values to the board.
+     */
     public void defaultBoard(){
 //		map = new Integer[][]{
 //			{1,		null,	8,		null,	null,	6,		9,		2,		null},
@@ -153,6 +192,10 @@ public class Bean implements Serializable{
 //		};
     }
 	
+    /**
+     * Getters and setters.
+     */
+    
 	public Map<String, Object> getPossibleValues() {
 		return possibleValues;
 	}
@@ -170,6 +213,11 @@ public class Bean implements Serializable{
 		sanatizeBoard(map);
 	}
 	
+	/**
+	 * For an unknown reason the empty cells of the boards were becoming null instead of ' ' (a space character). 
+	 * As a workaround this method sanitizes the board whenever it is updated by the front end.
+	 * @param map The sanitized sudoku board.
+	 */
 	public void sanatizeBoard(Character[][] map) {
 		if(map!=null) {
 			for(int i=0; i<9; i++) {
@@ -181,20 +229,4 @@ public class Bean implements Serializable{
 			}
 		}
 	}
-
-	public void submit() {
-        output = "Hello World! You have typed: " + input;
-    }
-
-    public String getInput() {
-        return input;
-    }
-
-    public void setInput(String input) {
-        this.input = input;
-    }
-
-    public String getOutput() {
-        return output;
-    }
 }
