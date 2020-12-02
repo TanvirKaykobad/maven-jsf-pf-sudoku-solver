@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p = "http://primefaces.org/ui" >
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <h:outputStylesheet library="css" name="bootstrap.min.css" target="head" />
+    <link type="text/css" rel="stylesheet" href="/project/faces/javax.faces.resource/theme.css?ln=primefaces-glass-x" />
+    <h:outputStylesheet library="css" name="board.css" target="head" />
+
+    <h:head>
+    </h:head>
+    <h:body>
+    
+<div class="jumbotron text-center">
+  <h1>Sudoku Solver</h1>
+</div>
+    
+<div class="container">
+  
+	<h:form id="mapForm">
+	
+        <h:dataTable id="mapTable" value = "#{bean.map}" var = "row"
+            styleClass = "sudokuTable" class="col-sm-12 col-md-8 col-lg-6">
+            
+            <h:column>    				
+				<h:selectOneMenu value="#{row[0]}">
+					<f:selectItems value="#{bean.possibleValues}" />
+				</h:selectOneMenu>
+            </h:column>
+            
+            <h:column>
+				<h:selectOneMenu value="#{row[1]}">
+					<f:selectItems value="#{bean.possibleValues}" />
+				</h:selectOneMenu>
+            </h:column>
+            <h:column>
+				<h:selectOneMenu value="#{row[2]}">
+					<f:selectItems value="#{bean.possibleValues}" />
+				</h:selectOneMenu>
+            </h:column>
+            <h:column>
+				<h:selectOneMenu value="#{row[3]}">
+					<f:selectItems value="#{bean.possibleValues}" />
+				</h:selectOneMenu>            
+            </h:column>
+            <h:column>
+				<h:selectOneMenu value="#{row[4]}">
+					<f:selectItems value="#{bean.possibleValues}" />
+				</h:selectOneMenu>
+            </h:column>
+            <h:column>
+				<h:selectOneMenu value="#{row[5]}">
+					<f:selectItems value="#{bean.possibleValues}" />
+				</h:selectOneMenu>            
+            </h:column>
+            <h:column>
+				<h:selectOneMenu value="#{row[6]}">
+					<f:selectItems value="#{bean.possibleValues}" />
+				</h:selectOneMenu>
+            </h:column>
+            <h:column>
+				<h:selectOneMenu value="#{row[7]}">
+					<f:selectItems value="#{bean.possibleValues}" />
+				</h:selectOneMenu>
+            </h:column>
+            <h:column>
+				<h:selectOneMenu value="#{row[8]}">
+					<f:selectItems value="#{bean.possibleValues}" />
+				</h:selectOneMenu>            
+            </h:column>
+         </h:dataTable>
+	<div class="col-sm-12 col-md-12 col-lg-12">
+		   <h:panelGroup style="display:block; text-align:center">
+		   		<p:commandButton value="Clear Board" id="clearBoard" update="mapForm:mapTable, growl" process="@form" action="#{bean.clearBoard}" />
+		   		<p:commandButton value="Default Board" id="defaultBoard" update="mapForm:mapTable, growl" process="@form" action="#{bean.defaultBoard}" />
+			    <p:commandButton value="Validate Board" id="validateBoard" update="mapForm:mapTable, growl" process="@form" action="#{bean.validateSudoku}" />
+			    <p:commandButton value="Solve Board" id="solveBoard" update="mapForm:mapTable, growl" process="@form" action="#{bean.solveSudoku}" />
+		   </h:panelGroup>
+	</div>
+
+	    <p:growl id="growl" life="30000" />
+	     
+	</h:form>
+</div>
+
+    </h:body>
+</html>

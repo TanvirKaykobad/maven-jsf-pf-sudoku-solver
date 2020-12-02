@@ -1,0 +1,37 @@
+table {
+  margin:3em auto;
+}
+td {
+  height:30px;
+  width:30px;
+  border:1px solid;
+  text-align:center;
+}
+td:first-child {
+  border-left:solid;
+  border-left-width: 3px;
+}
+td:nth-child(3n) {
+  border-right:solid;
+  border-right-width: 3px;
+}
+tr:first-child {
+  border-top:solid;
+  border-top-width: 3px;
+}
+tr:nth-child(3n) td {
+  border-bottom:solid;
+  border-bottom-width: 3px;
+}
+
+.ui-selectonemenu .ui-selectonemenu-label {
+    min-width: 100% !important;
+}
+
+p.event_desc {
+     font: bold 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+     line-height: 14px;
+     height: 35px;
+     margin: 0px;
+     margin-top: 35px;
+}
