@@ -40,6 +40,11 @@ A brute force solution of the problem would requrie exponential number of comput
 Since recursion can eat up memory very quickly, it was important to represent the state of the problem using as small amount of memory as possible.
 To do so I have chosen to use bit-operations to validate the rules. Normally we would use 9 integers for each row rule, column rule and sub-matrix rule, requiring 27 integers a total for each iteration. But notice that for each rule (row, column or submatrix), all we need to keep track of is whether a digit (1 to 9) has appeared yet or not. This can be done in an integer where the i-th bit being 1 denotes that the digit i has already appeared for the rule. Let an integer variable 'var\_i' denote the digits that have appeared thus far in row i. Let us next insert the digit j in the i-th row next. Then to keep track of it we denote var\_i = var\_i BITWISE\_OR (1 LEFT\_SHIFT (j-1)). Now for the cell in the i-th row and j-th column, it has three integers row, col, sub denoting the three rules (row rule, column rule, sub-matrix rule) it has. Then to compute the available digits we can use in this cell, we simply have to take the inverse of (row BITWISE\_OR col BITWISE\_OR sub) from the 0-th bit to 8-th bit. Then by repeatedly dividing the result by 2 (or by right shifting) we can find all these available digits. As a result we are not only saving space per iteration, we are also saving computational time by opting for bit operations instead of iterating through a list of numbers that have appeared for each rule.
 
+## Future Work
+* Implement threading for parallelized solution searching computation.
+* Significantly reduce the memory requirement of SudokuEngine by not creating a new sudoku matrix for each iteration.
+* Experiment and explore more lightweight front-end solutions.
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
