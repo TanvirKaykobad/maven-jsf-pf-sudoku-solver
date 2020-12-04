@@ -2,7 +2,10 @@ package tanvir.project.sudoku;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
@@ -14,6 +17,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import tanvir.project.sudoku.engine.SudokuEngine;
+import tanvir.project.sudoku.thread.SudokuRunner;
 
 
 /**
@@ -47,6 +51,16 @@ public class Bean implements Serializable{
 	 */
     private SudokuEngine engine = null;
     
+    /**
+     * The number of threads for solving sudoku
+     */
+	private int threadNum;
+	
+	/**
+	 * Possible number of threads 
+	 */
+	private Map<String,Object> possibleThreadValues;
+    
     
     /**
      * This method is called after index.xhtml page is loaded
@@ -54,13 +68,19 @@ public class Bean implements Serializable{
 	@PostConstruct
 	public void initialize(){
 		if(!FacesContext.getCurrentInstance().isPostback()) {
-		defaultBoard();
-		
-    	possibleValues = new LinkedHashMap<String,Object>();
-		for(Character i='1';i<='9';i++) {
-			possibleValues.put(""+i,i);
-		}
-		possibleValues.put(" ",' ');
+			defaultBoard();
+			
+	    	possibleValues = new LinkedHashMap<String,Object>();
+			for(Character i='1';i<='9';i++) {
+				possibleValues.put(""+i,i);
+			}
+			possibleValues.put(" ",' ');
+			
+			possibleThreadValues = new LinkedHashMap<String,Object>();
+			for(Integer i=1;i<=20;i++) {
+				possibleThreadValues.put(""+i,i);
+			}
+			threadNum=4;
 		}
 	}
 	
@@ -76,17 +96,28 @@ public class Bean implements Serializable{
 			LOGGER.info(sb.toString());
 		}
 	}
-	
+
 	/**
 	 * Validates the sudoku board. If not valid, a detailed message is given to show any error. 
 	 */
 	public void validateSudoku() {
+		try {
+			validateSudoku(map);
+    		addMessage("Board is valid.");
+		} catch(IllegalArgumentException e) {
+			addErrorMessage(e.getLocalizedMessage());
+		}
+	}
+	
+	/**
+	 * Validates the sudoku board. Throws IllegalArgumentException if the map is not valid
+	 */
+	private void validateSudoku(Character[][] map) throws IllegalArgumentException{
     	try {
     		sanatizeBoard(map);
-    		engine = new SudokuEngine(map);
-    		addMessage("Board is valid.");
+    		SudokuEngine engine = new SudokuEngine(map);
     	} catch(IllegalArgumentException e) {
-    		addErrorMessage(e.getLocalizedMessage());
+    		throw e;
     	}
 	}
 	
@@ -113,14 +144,112 @@ public class Bean implements Serializable{
     		} else {
     			map = solution;
     		}
-    		addMessage("Searching possible soltuion");
+    		addMessage("Searching possible solution");
 
     		long endTime = System.currentTimeMillis();
-    		addMessage("Attempts: "+attempt+" Time: " + (endTime-startTime) + "ms"); 
+    		addMessage("Time: " + (endTime-startTime) + "ms, Attempts: "+attempt); 
     		
     	} catch(IllegalArgumentException e) {
     		addErrorMessage(e.getLocalizedMessage());
     	}
+    }
+    
+	/**
+	 * Solves the sudoku board using threads. If any of the threads finds the solution, all the threads are requested to be terminated. 
+	 * If any solution is found, the board is updated with the solution. Notifies the user the time taken by the process, 
+	 * and if the puzzle has a solution exists.
+	 */
+    public void solveSudokuUsingThreads() {
+    	if(map!=null) {
+    		sanatizeBoard(map);
+    		logMap();
+    	} else {
+    		LOGGER.error("ButtonAction: map is null");
+    		return;
+    	}
+    	
+    	long startTime = System.currentTimeMillis();
+    	List<Character[][]> solutionList = new LinkedList<Character[][]>();
+    	
+    	//create maps
+    	ConcurrentLinkedQueue<Character[][]> taskList = new ConcurrentLinkedQueue<Character[][]>(); 
+		Character[][] polledMap = getCopy(map);
+		taskList.add(polledMap);
+		
+		polledMap = taskList.poll();
+		for(int i=0;i<9 && taskList.size()<100;i++) {
+			for(int j=0;j<9 && taskList.size()<100;j++){
+				if(polledMap[i][j]==' ') {
+					for(Character insert='1'; insert<='9'; insert++) {
+						Character[][] subTaskMap = getCopy(polledMap);
+						subTaskMap[i][j]=insert;
+						try {
+							validateSudoku(subTaskMap);
+							taskList.add(subTaskMap);
+						} catch(Exception e) {
+							
+						}
+					}
+				}
+			}
+		}
+    	
+    	//create threads
+    	try {
+    		
+    		SudokuRunner[] runnerList = new SudokuRunner[threadNum];
+    		for(int i=0;i<threadNum;i++) {
+    			runnerList[i] = new SudokuRunner(taskList, solutionList, i);
+    		}
+    		for(SudokuRunner runner:runnerList) {
+    			runner.run();
+    		}
+    		
+    		boolean alive = true;
+    		while(solutionList.isEmpty() && alive) {
+    			try {
+    				alive = false;
+    				for(int i=0;i<threadNum;i++) {
+    					if(runnerList[i].isRunning()) {
+    						alive = true;
+    						break;
+    					}
+    				}
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    		}
+    		for(SudokuRunner runner:runnerList) {
+    			runner.setStopRequested(true);
+    		}    		
+
+    		if(solutionList.isEmpty()) {
+    			addErrorMessage("No solution exists");    			
+    		} else {
+    			map = solutionList.get(0);
+    		}
+//    		addMessage("Searching possible solution");
+
+    		long endTime = System.currentTimeMillis();
+    		addMessage("Time taken: " + (endTime-startTime) + "ms"); 
+    	} catch(IllegalArgumentException e) {
+    		addErrorMessage(e.getLocalizedMessage());
+    	}
+    }
+    
+    private Character[][] getCopy(Character[][] map){
+    	if(map==null) {
+    		return null;
+    	}
+    	Character[][] copy = new Character[map.length][map[0].length];
+    	for(int i=0;i<map.length;i++) {
+    		for(int j=0;j<map[0].length;j++) {
+    			copy[i][j]=map[i][j];
+    		}
+    	}
+    	return copy;
     }
  
     /**
@@ -213,6 +342,22 @@ public class Bean implements Serializable{
 		sanatizeBoard(map);
 	}
 	
+	public int getThreadNum() {
+		return threadNum;
+	}
+
+	public void setThreadNum(int threadNum) {
+		this.threadNum = threadNum;
+	}
+
+	public synchronized Map<String, Object> getPossibleThreadValues() {
+		return possibleThreadValues;
+	}
+
+	public synchronized void setPossibleThreadValues(Map<String, Object> possibleThreadValues) {
+		this.possibleThreadValues = possibleThreadValues;
+	}
+
 	/**
 	 * For an unknown reason the empty cells of the boards were becoming null instead of ' ' (a space character). 
 	 * As a workaround this method sanitizes the board whenever it is updated by the front end.

@@ -2,7 +2,6 @@ package tanvir.project.sudoku.test;
 
 import java.security.InvalidParameterException;
 import java.text.StringCharacterIterator;
-import java.util.List;
 
 import tanvir.project.sudoku.engine.SudokuEngine;
 

@@ -79,6 +79,13 @@
 			    <p:commandButton value="Validate Board" id="validateBoard" update="mapForm:mapTable, growl" process="@form" action="#{bean.validateSudoku}" />
 			    <p:commandButton value="Solve Board" id="solveBoard" update="mapForm:mapTable, growl" process="@form" action="#{bean.solveSudoku}" />
 		   </h:panelGroup>
+		   <h:panelGroup style="display:block; text-align:center; margin-top:0.5rem;">
+		   		<p:outputLabel for="@next" value="Threads:" style="margin-right:0.2rem;"/>
+				<p:selectOneMenu value="#{bean.threadNum}" style="margin-right:0.5rem;">
+					<f:selectItems value="#{bean.possibleThreadValues}" />
+				</p:selectOneMenu>  
+			    <p:commandButton value="Solve Board Using Threads" id="solveBoardThread" update="mapForm:mapTable, growl" process="@form" action="#{bean.solveSudokuUsingThreads}" />
+		   </h:panelGroup>
 	</div>
 
 	    <p:growl id="growl" life="30000" />

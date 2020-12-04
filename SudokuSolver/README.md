@@ -31,6 +31,7 @@ The front end file viewed by users is index.xhtml. Here the sudoku board is init
 * Default board: To load the default board
 * Validate board: This Checks if the current board breaks any of the rules mentioned in Section Sudoku Rules.
 * Solve board: This feature solves the board or notifies the user if no solution to the puzzle exists.
+* Solve board using threads: Solves the puzzle using between 1 to 20 threads.
 
 The algorithm for solving sudoku is implemented in tanvir.project.sudoku.engine.SudokuEngine class. On the other hand, the xhtml file is backed by tanvir.project.sudoku.Bean backing bean. Thus the backing bean works as the controller between the view (index.xhtml) file and the model (SudokuEngine). The board.css file is used to draw the board in index.xhtml. It is based on [this](https://codepen.io/gc-nomade/pen/eBcCI) example found in CodePen. Bootstrap css is also used to provide a responsive view so long as the device's screen dimension is at least 375X560 px.
 
@@ -41,15 +42,14 @@ Since recursion can eat up memory very quickly, it was important to represent th
 To do so I have chosen to use bit-operations to validate the rules. Normally we would use 9 integers for each row rule, column rule and sub-matrix rule, requiring 27 integers a total for each iteration. But notice that for each rule (row, column or submatrix), all we need to keep track of is whether a digit (1 to 9) has appeared yet or not. This can be done in an integer where the i-th bit being 1 denotes that the digit i has already appeared for the rule. Let an integer variable 'var\_i' denote the digits that have appeared thus far in row i. Let us next insert the digit j in the i-th row next. Then to keep track of it we denote var\_i = var\_i BITWISE\_OR (1 LEFT\_SHIFT (j-1)). Now for the cell in the i-th row and j-th column, it has three integers row, col, sub denoting the three rules (row rule, column rule, sub-matrix rule) it has. Then to compute the available digits we can use in this cell, we simply have to take the inverse of (row BITWISE\_OR col BITWISE\_OR sub) from the 0-th bit to 8-th bit. Then by repeatedly dividing the result by 2 (or by right shifting) we can find all these available digits. As a result we are not only saving space per iteration, we are also saving computational time by opting for bit operations instead of iterating through a list of numbers that have appeared for each rule.
 
 ## Future Work
-* Implement threading for parallelized solution searching computation.
+* ~~Implement threading for parallelized solution searching computation.~~
+   * Done on 3rd December 2020. Added Class SudokuRunner that implements runnable. The backing bean breaks the sudoku problem into ~100 subproblems and saves them in a queue. The worker threads poll from the queue to solve these sub problems. Not finding any solution for any of the subproblems indicates that no solution of the orginal problem exists. No improvement noticed in terms of solution search time. This is due to the sudoku algorithm being rather efficient compared to the overhead required for initializing threads. 
 * ~~Significantly reduce the memory requirement of SudokuEngine by not creating a new sudoku matrix for each iteration.~~
 * Use one int (32 bit) to save 3 rules, requiring 9 integers instead of 27 per iteration.
 * Experiment and explore more lightweight front-end solutions.
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
+Pull requests are welcome.
 
 ## License
 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)

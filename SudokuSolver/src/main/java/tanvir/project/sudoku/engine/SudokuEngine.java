@@ -94,7 +94,7 @@ public class SudokuEngine {
 	
 	/**
 	 * This method returns the solution of the sudoku problem
-	 * @return
+	 * @return The solution of the sudoku puzzle, or null if none exists
 	 */
 	public Character[][] getSolution(){
 		return getPrimitiveToWrapped(solveRecursively());
@@ -210,6 +210,7 @@ public class SudokuEngine {
 	 */
 	public static void outputMap(int[][] map) {
 		StringBuilder sb = new StringBuilder();
+		sb.append("\n");
 		for(int i=0;i<map.length;i++) {
 			for(int j=0;j<map.length;j++) {
 				if(map[i][j]!=0){
@@ -224,8 +225,11 @@ public class SudokuEngine {
 	}
 
 	
-    /* Brian Kernighan�s Algorithm for counting the one bits of an integer 
-     * Function to get no of set bits in binary representation of passed binary no. */
+	/**
+	 * Brian Kernighan's algorithm for counting the one bits of an integer
+	 * @param n the number whose one bits are to be counted
+	 * @return The number of set bits in n
+	 */
     static int countSetBits(int n) 
     { 
         int count = 0; 
