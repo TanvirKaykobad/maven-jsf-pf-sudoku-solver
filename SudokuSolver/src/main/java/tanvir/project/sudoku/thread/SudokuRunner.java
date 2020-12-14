@@ -68,7 +68,7 @@ public class SudokuRunner implements Runnable{
 		while(!stopRequested) {
 			//fetching task
 			Character[][] map;
-			synchronized(this) { //synchronized because modifying taskList
+			synchronized(taskList) { //synchronized because modifying taskList
 				if(!taskList.isEmpty()){
 					map= taskList.poll();
 				} else {
@@ -84,12 +84,12 @@ public class SudokuRunner implements Runnable{
 			
 			//If solution is found, add it to the list and return
 			if(mySolution != null) {
-				synchronized(this){	//synchronized because modifying solutionList
+				synchronized(solutionList){	//synchronized because modifying solutionList
 					solutionList.add(mySolution);
-					LOGGER.info("Solution found. Runner "+runnerId+" has terminated");
-					isRunning = false;
-					return;
 				}
+				LOGGER.info("Solution found. Runner "+runnerId+" has terminated");
+				isRunning = false;
+				return;
 			}
 		}
 		LOGGER.info("Runner "+runnerId+" has terminated");
